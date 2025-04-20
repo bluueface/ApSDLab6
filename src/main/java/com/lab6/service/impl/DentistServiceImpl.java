@@ -1,11 +1,15 @@
 package com.lab6.service.impl;
 
+import com.lab6.dto.mapper.DentistMapper;
+import com.lab6.dto.request.DentistRequest;
+import com.lab6.dto.response.DentistResponse;
 import com.lab6.entity.Dentist;
 import com.lab6.repository.DentistRepository;
 import com.lab6.service.DentistService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class DentistServiceImpl implements DentistService {
@@ -15,24 +19,33 @@ public class DentistServiceImpl implements DentistService {
         this.dentistRepository = dentistRepository;
     }
 
-    public List<Dentist> getAll() {
-        return dentistRepository.findAll();
+    @Override
+    public List<DentistResponse> getAll() {
+        return dentistRepository.findAll().stream()
+                .map(DentistMapper::toResponse)
+                .collect(Collectors.toList());
     }
 
-    public Dentist getById(Long id) {
-        return dentistRepository.findById(id).orElse(null);
+    @Override
+    public DentistResponse getById(Long id) {
+        return dentistRepository.findById(id)
+                .map(DentistMapper::toResponse)
+                .orElse(null);
     }
 
-    public Dentist create(Dentist dentist) {
-        return dentistRepository.save(dentist);
+    @Override
+    public DentistResponse create(DentistRequest request) {
+        return DentistMapper.toResponse(dentistRepository.save(DentistMapper.toEntity(request)));
     }
 
-    public Dentist update(Long id, Dentist updated) {
-        Dentist dentist = getById(id);
-        if (dentist != null) dentist.setFullName(updated.getFullName());
-        return dentistRepository.save(dentist);
+    @Override
+    public DentistResponse update(Long id, DentistRequest request) {
+        Dentist dentist = dentistRepository.findById(id).orElse(null);
+        if (dentist != null) dentist.setFullName(request.getFullName());
+        return DentistMapper.toResponse(dentistRepository.save(dentist));
     }
 
+    @Override
     public void delete(Long id) {
         dentistRepository.deleteById(id);
     }

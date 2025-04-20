@@ -1,17 +1,18 @@
 package com.lab6.service;
 
-import com.lab6.entity.Dentist;
+import com.lab6.dto.request.DentistRequest;
+import com.lab6.dto.response.DentistResponse;
 
 import java.util.List;
 
 public interface DentistService {
-    List<Dentist> getAll();
+    List<DentistResponse> getAll();
 
-    Dentist getById(Long id);
+    DentistResponse getById(Long id);
 
-    Dentist create(Dentist dentist);
+    DentistResponse create(DentistRequest dentist);
 
-    Dentist update(Long id, Dentist updated);
+    DentistResponse update(Long id, DentistRequest updated);
 
     void delete(Long id);
 }

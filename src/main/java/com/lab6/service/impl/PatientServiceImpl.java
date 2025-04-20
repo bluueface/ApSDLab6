@@ -1,42 +1,57 @@
 package com.lab6.service.impl;
 
+import com.lab6.dto.mapper.AddressMapper;
+import com.lab6.dto.mapper.PatientMapper;
+import com.lab6.dto.request.PatientRequest;
+import com.lab6.dto.response.PatientResponse;
 import com.lab6.entity.Patient;
+import com.lab6.exception.PatientNotFoundException;
 import com.lab6.repository.PatientRepository;
 import com.lab6.service.PatientService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
+@RequiredArgsConstructor
 public class PatientServiceImpl implements PatientService {
     private final PatientRepository patientRepository;
 
-    public PatientServiceImpl(PatientRepository patientRepository) {
-        this.patientRepository = patientRepository;
+    @Override
+    public Page<PatientResponse> getAll(Pageable pageable) {
+        return patientRepository.findAll(pageable)
+                .map(PatientMapper::toResponse);
     }
 
-    public List<Patient> getAll() {
-        return patientRepository.findAll();
+    @Override
+    public PatientResponse getById(Long id) {
+        return patientRepository.findById(id)
+                .map(PatientMapper::toResponse)
+                .orElseThrow(() -> new PatientNotFoundException(id));
     }
 
-    public Patient getById(Long id) {
-        return patientRepository.findById(id).orElse(null);
+    @Override
+    public PatientResponse create(PatientRequest request) {
+        return PatientMapper.toResponse(patientRepository.save(PatientMapper.toEntity(request)));
     }
 
-    public Patient create(Patient patient) {
-        return patientRepository.save(patient);
+    @Override
+    public PatientResponse update(Long id, PatientRequest request) {
+        Patient patient = patientRepository.findById(id)
+                .orElseThrow(() -> new PatientNotFoundException(id));
+
+        patient.setFullName(request.getFullName());
+        patient.setAddress(AddressMapper.toEntity(request.getAddress()));
+
+        return PatientMapper.toResponse(patientRepository.save(patient));
     }
 
-    public Patient update(Long id, Patient updated) {
-        Patient patient = getById(id);
-        if (patient != null) {
-            patient.setFullName(updated.getFullName());
-            patient.setAddress(updated.getAddress());
-        }
-        return patientRepository.save(patient);
-    }
-
+    @Override
     public void delete(Long id) {
+        if (!patientRepository.existsById(id)) {
+            throw new PatientNotFoundException(id);
+        }
         patientRepository.deleteById(id);
     }
 }

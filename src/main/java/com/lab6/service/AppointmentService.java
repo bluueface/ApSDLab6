@@ -1,17 +1,18 @@
 package com.lab6.service;
 
-import com.lab6.entity.Appointment;
+import com.lab6.dto.request.AppointmentRequest;
+import com.lab6.dto.response.AppointmentResponse;
 
 import java.util.List;
 
 public interface AppointmentService {
-    List<Appointment> getAll();
+    List<AppointmentResponse> getAll();
 
-    Appointment getById(Long id);
+    AppointmentResponse getById(Long id);
 
-    Appointment create(Appointment appointment);
+    AppointmentResponse create(AppointmentRequest appointment);
 
-    Appointment update(Long id, Appointment updated);
+    AppointmentResponse update(Long id, AppointmentRequest updated);
 
     void delete(Long id);
 }

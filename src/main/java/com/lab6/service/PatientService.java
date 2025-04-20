@@ -1,17 +1,19 @@
 package com.lab6.service;
 
-import com.lab6.entity.Patient;
+import com.lab6.dto.request.PatientRequest;
+import com.lab6.dto.response.PatientResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-import java.util.List;
 
 public interface PatientService {
-    List<Patient> getAll();
+    Page<PatientResponse> getAll(Pageable pageable);
 
-    Patient getById(Long id);
+    PatientResponse getById(Long id);
 
-    Patient create(Patient patient);
+    PatientResponse create(PatientRequest patient);
 
-    Patient update(Long id, Patient updated);
+    PatientResponse update(Long id, PatientRequest updated);
 
     void delete(Long id);
 }
