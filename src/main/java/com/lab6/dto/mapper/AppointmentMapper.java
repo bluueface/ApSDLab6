@@ -5,12 +5,12 @@ import com.lab6.entity.Appointment;
 
 public class AppointmentMapper {
     public static AppointmentResponse toResponse(Appointment a) {
-        return new AppointmentResponse(
+        return a != null ? new AppointmentResponse(
                 a.getId(),
                 a.getAppointmentDate(),
                 PatientMapper.toResponse(a.getPatient()),
                 DentistMapper.toResponse(a.getDentist()),
                 SurgeryMapper.toResponse(a.getSurgery())
-        );
+        ) : null;
     }
 }

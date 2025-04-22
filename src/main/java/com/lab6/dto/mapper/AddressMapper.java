@@ -14,11 +14,11 @@ public class AddressMapper {
     }
 
     public static AddressDto toDto(Address entity) {
-        return new AddressDto(
+        return entity != null ? new AddressDto(
                 entity.getStreet(),
                 entity.getCity(),
                 entity.getState(),
                 entity.getZipCode()
-        );
+        ) : null;
     }
 }

@@ -4,6 +4,7 @@ import com.lab6.dto.mapper.DentistMapper;
 import com.lab6.dto.request.DentistRequest;
 import com.lab6.dto.response.DentistResponse;
 import com.lab6.entity.Dentist;
+import com.lab6.exception.DentistNotFoundException;
 import com.lab6.repository.DentistRepository;
 import com.lab6.service.DentistService;
 import org.springframework.stereotype.Service;
@@ -30,7 +31,7 @@ public class DentistServiceImpl implements DentistService {
     public DentistResponse getById(Long id) {
         return dentistRepository.findById(id)
                 .map(DentistMapper::toResponse)
-                .orElse(null);
+                .orElseThrow(() -> new DentistNotFoundException(id));
     }
 
     @Override
@@ -40,13 +41,16 @@ public class DentistServiceImpl implements DentistService {
 
     @Override
     public DentistResponse update(Long id, DentistRequest request) {
-        Dentist dentist = dentistRepository.findById(id).orElse(null);
+        Dentist dentist = dentistRepository.findById(id).orElseThrow(() -> new DentistNotFoundException(id));
         if (dentist != null) dentist.setFullName(request.getFullName());
         return DentistMapper.toResponse(dentistRepository.save(dentist));
     }
 
     @Override
     public void delete(Long id) {
+        if (!dentistRepository.existsById(id)) {
+            throw new DentistNotFoundException(id);
+        }
         dentistRepository.deleteById(id);
     }
 }

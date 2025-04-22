@@ -1,4 +1,4 @@
-package com.lab6.dto;
+package com.lab6.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

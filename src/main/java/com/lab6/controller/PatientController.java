@@ -4,14 +4,12 @@ import com.lab6.dto.request.PatientRequest;
 import com.lab6.dto.response.PatientResponse;
 import com.lab6.service.PatientService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Objects;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/adsweb/api/v1")
@@ -21,17 +19,10 @@ public class PatientController {
     private final PatientService patientService;
 
     @GetMapping("/patients")
-    public Page<PatientResponse> getAllPatients(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "fullName") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDir
-    ) {
-        Pageable pageable = sortDir.equalsIgnoreCase("desc")
-                ? PageRequest.of(page, size, Sort.by(sortBy).descending())
-                : PageRequest.of(page, size, Sort.by(sortBy).ascending());
-
-        return patientService.getAll(pageable);
+    public List<PatientResponse> getAllPatients() {
+        return patientService.getAll().stream()
+                .sorted(Comparator.comparing(p -> p.getFullName().split(" ")[1])) // sort by last name
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/patients/{id}")
@@ -57,36 +48,18 @@ public class PatientController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/patients/search")
-    public Page<PatientResponse> searchPatients(
-            @RequestParam String query,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "fullName") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDir
-    ) {
-        Pageable pageable = sortDir.equalsIgnoreCase("desc")
-                ? PageRequest.of(page, size, Sort.by(sortBy).descending())
-                : PageRequest.of(page, size, Sort.by(sortBy).ascending());
-
-        return (Page<PatientResponse>) patientService.getAll(pageable).map(p ->
-                (p.getFullName().toLowerCase().contains(query.toLowerCase()) ||
-                        p.getPatientNo().toLowerCase().contains(query.toLowerCase()))
-                        ? p
-                        : null
-        ).filter(Objects::nonNull);
+    @GetMapping("/patients/search/{searchString}")
+    public List<PatientResponse> searchPatient(@PathVariable String searchString) {
+        return patientService.getAll().stream()
+                .filter(p -> p.getFullName().toLowerCase().contains(searchString.toLowerCase()) ||
+                        p.getPatientNo().toLowerCase().contains(searchString.toLowerCase()))
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/addresses")
-    public Page<PatientResponse> getAllAddressesSortedByCity(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "asc") String sortDir
-    ) {
-        Pageable pageable = sortDir.equalsIgnoreCase("desc")
-                ? PageRequest.of(page, size, Sort.by("address.city").descending())
-                : PageRequest.of(page, size, Sort.by("address.city").ascending());
-
-        return patientService.getAll(pageable);
+    public List<PatientResponse> getAllAddressesSortedByCity() {
+        return patientService.getAll().stream()
+                .sorted(Comparator.comparing(p -> p.getAddress().getCity()))
+                .collect(Collectors.toList());
     }
 }
