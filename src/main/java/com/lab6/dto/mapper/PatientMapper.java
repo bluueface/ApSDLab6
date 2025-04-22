@@ -14,11 +14,11 @@ public class PatientMapper {
     }
 
     public static PatientResponse toResponse(Patient entity) {
-        return new PatientResponse(
+        return entity != null ? new PatientResponse(
                 entity.getId(),
                 entity.getPatientNo(),
                 entity.getFullName(),
                 AddressMapper.toDto(entity.getAddress())
-        );
+        ) : null;
     }
 }

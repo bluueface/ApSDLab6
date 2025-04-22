@@ -12,6 +12,6 @@ public class DentistMapper {
     }
 
     public static DentistResponse toResponse(Dentist entity) {
-        return new DentistResponse(entity.getId(), entity.getFullName());
+        return entity != null ? new DentistResponse(entity.getId(), entity.getFullName()) : null;
     }
 }
