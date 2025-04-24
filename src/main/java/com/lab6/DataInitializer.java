@@ -1,15 +1,15 @@
 package com.lab6;
 
 import com.lab6.entity.*;
-import com.lab6.repository.AppointmentRepository;
-import com.lab6.repository.DentistRepository;
-import com.lab6.repository.PatientRepository;
-import com.lab6.repository.SurgeryRepository;
+import com.lab6.repository.*;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -20,6 +20,29 @@ public class DataInitializer implements CommandLineRunner {
     private final DentistRepository dentistRepository;
     private final SurgeryRepository surgeryRepository;
     private final AppointmentRepository appointmentRepository;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    @PostConstruct
+    public void seed() {
+        seedUser("admin", "ROLE_ADMIN", "Admin", "admin@lab.com");
+        seedUser("patient", "ROLE_PATIENT", "Patient", "patient@lab.com");
+    }
+
+    private void seedUser(String username, String roleName, String fullName, String email) {
+        if (userRepository.findByUsername(username).isEmpty()) {
+            Role role = roleRepository.findByName(roleName)
+                    .orElse(new Role(null, roleName));
+            List<Role> roles = new ArrayList<>();
+            roles.add(role);
+            User user = new User(null, fullName, fullName, fullName, username,
+                    passwordEncoder.encode("123"), email,
+                    true, true, true, true);
+            user.setRoles(roles);
+            userRepository.save(user);
+        }
+    }
 
     @Override
     public void run(String... args) throws Exception {

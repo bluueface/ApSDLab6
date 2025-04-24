@@ -34,12 +34,11 @@ public class DentalSurgeryWebApiSecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(
-                        auth -> {
-                            auth.requestMatchers("/h2-console/**").permitAll()
-                                    .requestMatchers("/dentalsurgery/api/v1/service/public/**").permitAll()
-                                    .requestMatchers("/dentalsurgery/api/v1/admin/**").authenticated();
-                        }
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/h2-console/**").permitAll()
+                        .requestMatchers("/dentalsurgery/api/v1/service/public/**").permitAll()
+                        .requestMatchers("/adsweb/api/v1/**").authenticated() // ✅ this line is missing!
+                        .anyRequest().denyAll() // explicitly block unknown paths
                 )
                 .headers(headers ->
                         headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable)

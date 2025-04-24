@@ -1,10 +1,13 @@
 package com.lab6.utils;
 
+import com.lab6.entity.User;
+import com.lab6.service.impl.DentalSurgeryUserDetailsService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -24,9 +27,11 @@ import java.util.function.Function;
  */
 @Service
 public class JWTManagementUtilityService {
-    //    private String secret = "cs425-swe";
-    //    private final byte[] secret = Base64.getDecoder().decode("jZ5OyIDw8O+HKXZX4z0YtLQWR66Bj80KWV5ruM1ie5Q=");
     public static final String SECRET = "5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437";
+
+    @Autowired
+    private DentalSurgeryUserDetailsService userRepository;
+
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -64,7 +69,12 @@ public class JWTManagementUtilityService {
     }
 
     public String generateToken(String username) {
+        User user = (User) userRepository.loadUserByUsername(username);
         Map<String, Object> claims = new HashMap<>();
+        claims.put("roles", user.getRoles().stream()
+                .map(role -> role.getName())
+                .toArray());
+
         return createToken(claims, username);
     }
 

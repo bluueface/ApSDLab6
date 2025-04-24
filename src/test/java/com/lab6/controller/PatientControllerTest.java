@@ -1,17 +1,18 @@
 package com.lab6.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lab6.config.MockedServiceConfig;
 import com.lab6.dto.request.PatientRequest;
 import com.lab6.dto.response.PatientResponse;
 import com.lab6.service.PatientService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Collections;
@@ -25,7 +26,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(PatientController.class)
-@Import(PatientControllerTest.MockedServiceConfig.class)
+@AutoConfigureMockMvc(addFilters = false)
+@Import(MockedServiceConfig.class)
+@WithMockUser(username = "admin", roles = {"ADMIN"})
 public class PatientControllerTest {
     @Autowired
     private MockMvc mockMvc;
@@ -46,6 +49,7 @@ public class PatientControllerTest {
         mockMvc.perform(get("/adsweb/api/v1/patients"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].fullName", is("John Doe")));
+
     }
 
     @Test
@@ -126,11 +130,4 @@ public class PatientControllerTest {
                 .andExpect(jsonPath("$[0].fullName", is("Jane Location")));
     }
 
-    @TestConfiguration
-    static class MockedServiceConfig {
-        @Bean
-        public PatientService patientService() {
-            return Mockito.mock(PatientService.class);
-        }
-    }
 }

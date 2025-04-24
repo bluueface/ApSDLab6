@@ -5,6 +5,7 @@ import com.lab6.dto.response.PatientResponse;
 import com.lab6.service.PatientService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Comparator;
@@ -19,6 +20,7 @@ public class PatientController {
     private final PatientService patientService;
 
     @GetMapping("/patients")
+    @PreAuthorize("hasRole('ADMIN')")
     public List<PatientResponse> getAllPatients() {
         return patientService.getAll().stream()
                 .sorted(Comparator.comparing(p -> p.getFullName().split(" ")[1])) // sort by last name
