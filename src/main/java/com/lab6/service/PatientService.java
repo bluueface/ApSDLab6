@@ -2,12 +2,14 @@ package com.lab6.service;
 
 import com.lab6.dto.request.PatientRequest;
 import com.lab6.dto.response.PatientResponse;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 
 public interface PatientService {
-    List<PatientResponse> getAll();
+    Page<PatientResponse> getAll(Pageable pageable);
+
+    Page<PatientResponse> searchPatients(String searchString, Pageable pageable);
 
     PatientResponse getById(Long id);
 

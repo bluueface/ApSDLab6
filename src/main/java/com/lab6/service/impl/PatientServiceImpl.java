@@ -9,10 +9,9 @@ import com.lab6.exception.PatientNotFoundException;
 import com.lab6.repository.PatientRepository;
 import com.lab6.service.PatientService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -20,10 +19,15 @@ public class PatientServiceImpl implements PatientService {
     private final PatientRepository patientRepository;
 
     @Override
-    public List<PatientResponse> getAll() {
-        return patientRepository.findAll().stream()
-                .map(PatientMapper::toResponse)
-                .collect(Collectors.toList());
+    public Page<PatientResponse> searchPatients(String searchString, Pageable pageable) {
+        Page<Patient> patientsPage = patientRepository.searchPatients(searchString, pageable);
+        return patientsPage.map(PatientMapper::toResponse);
+    }
+
+    @Override
+    public Page<PatientResponse> getAll(Pageable pageable) {
+        return patientRepository.findAll(pageable)
+                .map(PatientMapper::toResponse);
     }
 
     @Override

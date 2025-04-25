@@ -11,6 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -44,11 +47,13 @@ public class PatientControllerTest {
         PatientResponse response = new PatientResponse();
         response.setFullName("John Doe");
 
-        Mockito.when(patientService.getAll()).thenReturn(Collections.singletonList(response));
+        Page<PatientResponse> responsePage = new PageImpl<>(Collections.singletonList(response));
+
+        Mockito.when(patientService.getAll(Mockito.any(Pageable.class))).thenReturn(responsePage);
 
         mockMvc.perform(get("/adsweb/api/v1/patients"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].fullName", is("John Doe")));
+                .andExpect(jsonPath("$.content[0].fullName", is("John Doe")));
 
     }
 
@@ -68,6 +73,7 @@ public class PatientControllerTest {
     void testCreatePatient() throws Exception {
         PatientRequest request = new PatientRequest();
         request.setFullName("Alan Walker");
+        request.setPatientNo("P123");
 
         PatientResponse response = new PatientResponse();
         response.setFullName("Alan Walker");
@@ -110,24 +116,15 @@ public class PatientControllerTest {
         response.setFullName("Search Match");
         response.setPatientNo("P123");
 
-        Mockito.when(patientService.getAll()).thenReturn(Collections.singletonList(response));
+        Page<PatientResponse> responsePage = new PageImpl<>(Collections.singletonList(response));
+
+        Mockito.when(patientService.searchPatients(Mockito.eq("search"), Mockito.any(Pageable.class)))
+                .thenReturn(responsePage);
 
         mockMvc.perform(get("/adsweb/api/v1/patients/search/search"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].fullName", is("Search Match")));
-    }
-
-    @Test
-    void testGetAllAddressesSortedByCity() throws Exception {
-        PatientResponse response = new PatientResponse();
-        response.setFullName("Jane Location");
-
-        Mockito.when(patientService.getAll()).thenReturn(Collections.singletonList(response));
-
-        mockMvc.perform(get("/adsweb/api/v1/addresses"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].fullName", is("Jane Location")));
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].fullName", is("Search Match")));
     }
 
 }

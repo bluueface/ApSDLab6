@@ -3,14 +3,14 @@ package com.lab6.controller;
 import com.lab6.dto.request.PatientRequest;
 import com.lab6.dto.response.PatientResponse;
 import com.lab6.service.PatientService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/adsweb/api/v1")
@@ -21,47 +21,49 @@ public class PatientController {
 
     @GetMapping("/patients")
     @PreAuthorize("hasRole('ADMIN')")
-    public List<PatientResponse> getAllPatients() {
-        return patientService.getAll().stream()
-                .sorted(Comparator.comparing(p -> p.getFullName().split(" ")[1])) // sort by last name
-                .collect(Collectors.toList());
+    public ResponseEntity<Page<PatientResponse>> getAllPatients(
+            @PageableDefault(page = 0, size = 10, sort = "fullName") Pageable pageable
+    ) {
+        Page<PatientResponse> patients = patientService.getAll(pageable);
+        return ResponseEntity.ok(patients);
     }
 
+
     @GetMapping("/patients/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PatientResponse> getPatientById(@PathVariable Long id) {
         PatientResponse response = patientService.getById(id);
         return (response != null) ? ResponseEntity.ok(response) : ResponseEntity.notFound().build();
     }
 
     @PostMapping("/patients")
-    public ResponseEntity<PatientResponse> createPatient(@RequestBody PatientRequest request) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<PatientResponse> createPatient(@Valid @RequestBody PatientRequest request) {
         return ResponseEntity.ok(patientService.create(request));
     }
 
     @PutMapping("/patients/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PatientResponse> updatePatient(@PathVariable Long id, @RequestBody PatientRequest request) {
         PatientResponse response = patientService.update(id, request);
         return (response != null) ? ResponseEntity.ok(response) : ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/patients/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deletePatient(@PathVariable Long id) {
         patientService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/patients/search/{searchString}")
-    public List<PatientResponse> searchPatient(@PathVariable String searchString) {
-        return patientService.getAll().stream()
-                .filter(p -> p.getFullName().toLowerCase().contains(searchString.toLowerCase()) ||
-                        p.getPatientNo().toLowerCase().contains(searchString.toLowerCase()))
-                .collect(Collectors.toList());
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Page<PatientResponse>> searchPatient(
+            @PathVariable String searchString,
+            @PageableDefault(page = 0, size = 10, sort = "fullName") Pageable pageable
+    ) {
+        Page<PatientResponse> result = patientService.searchPatients(searchString, pageable);
+        return ResponseEntity.ok(result);
     }
 
-    @GetMapping("/addresses")
-    public List<PatientResponse> getAllAddressesSortedByCity() {
-        return patientService.getAll().stream()
-                .sorted(Comparator.comparing(p -> p.getAddress().getCity()))
-                .collect(Collectors.toList());
-    }
 }

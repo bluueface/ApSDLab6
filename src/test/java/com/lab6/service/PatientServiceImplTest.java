@@ -10,12 +10,15 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.Collections;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 public class PatientServiceImplTest {
@@ -38,13 +41,15 @@ public class PatientServiceImplTest {
         patient.setPatientNo("P123");
         patient.setAddress(new Address("123 Main St", "Fairfield", "IA", "52557"));
 
-        when(patientRepository.findAll()).thenReturn(Arrays.asList(patient));
+        Page<Patient> patientPage = new PageImpl<>(Collections.singletonList(patient));
 
-        List<PatientResponse> responses = patientService.getAll();
+        when(patientRepository.findAll(any(Pageable.class))).thenReturn(patientPage);
+
+        Page<PatientResponse> responses = patientService.getAll(Pageable.unpaged());
 
         assertNotNull(responses);
-        assertEquals(1, responses.size());
-        assertEquals("John Doe", responses.get(0).getFullName());
+        assertEquals(1, responses.getTotalElements());
+        assertEquals("John Doe", responses.getContent().get(0).getFullName());
     }
 
     @Test
